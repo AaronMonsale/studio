@@ -12,9 +12,6 @@ export function Header({ user }: { user: UserSession | null }) {
             <div className="hidden md:block">
               <Logo />
             </div>
-            <div className="flex w-full items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
-                <UserNav user={user} />
-            </div>
         </header>
     );
 }

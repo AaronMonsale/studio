@@ -2,8 +2,6 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { SalesChart } from "@/components/dashboard/sales-chart";
 import { salesData, transactions } from "@/lib/data";
 import { DollarSign, Receipt, TrendingUp, Users } from "lucide-react";
-import { SalesInsights } from "@/components/dashboard/sales-insights";
-import { MetricSuggester } from "@/components/dashboard/metric-suggester";
 
 export default function DashboardPage() {
     const totalRevenue = transactions.reduce((acc, t) => t.status === 'Completed' ? acc + t.amount : acc, 0);
@@ -39,11 +37,6 @@ export default function DashboardPage() {
 
             <div className="col-span-1 md:col-span-2 lg:col-span-4">
                 <SalesChart data={salesData} />
-            </div>
-
-            <div className="col-span-1 md:col-span-2 lg:col-span-4 grid gap-4 md:gap-8 md:grid-cols-2">
-                <SalesInsights />
-                <MetricSuggester />
             </div>
         </div>
     );

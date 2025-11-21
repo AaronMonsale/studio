@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/lib/actions";
 import type { UserSession } from "@/lib/types";
-import { LogOut, User, Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
@@ -45,9 +45,6 @@ export function UserNav({ user }: { user: UserSession | null }) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href="/admin/settings"><User className="mr-2 h-4 w-4"/>Profile</Link>
-          </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/admin/settings"><Settings className="mr-2 h-4 w-4"/>Settings</Link>
           </DropdownMenuItem>

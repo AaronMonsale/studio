@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react';
 
 import { adminLogin, staffLogin, kitchenLogin } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
@@ -23,9 +23,9 @@ function SubmitButton({ children }: { children: React.ReactNode }) {
 }
 
 export default function LoginPage() {
-  const [adminState, adminAction] = useFormState(adminLogin, undefined);
-  const [staffState, staffAction] = useFormState(staffLogin, undefined);
-  const [kitchenState, kitchenAction] = useFormState(kitchenLogin, undefined);
+  const [adminState, adminAction] = useActionState(adminLogin, undefined);
+  const [staffState, staffAction] = useActionState(staffLogin, undefined);
+  const [kitchenState, kitchenAction] = useActionState(kitchenLogin, undefined);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">

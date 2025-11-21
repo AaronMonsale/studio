@@ -30,8 +30,12 @@ export function PinInput() {
       // Automatically submit the form
       const form = formRef.current;
       if (form) {
-        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-        form.dispatchEvent(submitEvent);
+        // We need to find the parent form of the button that was clicked to open the pin input
+        const parentForm = form.closest('form');
+        if (parentForm) {
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            parentForm.dispatchEvent(submitEvent);
+        }
       }
     }
   }, [pin]);
@@ -65,12 +69,12 @@ export function PinInput() {
       <div className="grid grid-cols-3 gap-2 w-full max-w-xs">
         {buttons.map((btn) => {
           if (btn === 'Clear') {
-            return <Button key={btn} variant="outline" size="lg" className="text-sm" onClick={handleClear} disabled={pending}>Clear</Button>;
+            return <Button key={btn} type="button" variant="outline" size="lg" className="text-sm" onClick={handleClear} disabled={pending}>Clear</Button>;
           }
           if (btn === 'Backspace') {
-            return <Button key={btn} variant="outline" size="lg" onClick={handleBackspace} disabled={pending}><Delete /></Button>;
+            return <Button key={btn} type="button" variant="outline" size="lg" onClick={handleBackspace} disabled={pending}><Delete /></Button>;
           }
-          return <Button key={btn} variant="outline" size="lg" className="text-xl" onClick={() => handleNumberClick(btn)} disabled={pending}>{btn}</Button>;
+          return <Button key={btn} type="button" variant="outline" size="lg" className="text-xl" onClick={() => handleNumberClick(btn)} disabled={pending}>{btn}</Button>;
         })}
       </div>
     </div>

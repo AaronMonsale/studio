@@ -11,6 +11,7 @@ import {
 import { Logo } from "@/components/logo";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { Header } from "@/components/header";
+import { UserNav } from "@/components/user-nav";
 
 export default async function AdminLayout({
   children,
@@ -37,7 +38,12 @@ export default async function AdminLayout({
       </Sidebar>
       <SidebarInset>
         <div className="flex h-full flex-col">
-            <Header user={session} />
+            <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-4 border-b bg-background px-4 sm:px-6">
+                <Header user={session} />
+                <div className="ml-auto">
+                    <UserNav user={session} />
+                </div>
+            </header>
             <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
               {children}
             </main>

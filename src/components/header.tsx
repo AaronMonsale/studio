@@ -1,4 +1,3 @@
-import { UserNav } from "@/components/user-nav";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Logo } from "./logo";
 import type { UserSession } from "@/lib/types";
@@ -11,6 +10,9 @@ export function Header({ user }: { user: UserSession | null }) {
             </div>
             <div className="hidden md:block">
               <Logo />
+            </div>
+            <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+              {/* Future header content can go here */}
             </div>
         </header>
     );

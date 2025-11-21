@@ -47,7 +47,7 @@ function OrderCard({ order }: { order: Order }) {
                     </Button>
                 )}
                 {order.status === 'Ready' && (
-                     <Button size="sm" variant="secondary" className="w-full">
+                     <Button size="sm" className="w-full bg-green-600 hover:bg-green-700 text-white">
                         <CheckCheck className="mr-2 h-4 w-4" />
                         Done
                     </Button>

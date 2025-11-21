@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
-import { useActionState, useFormStatus } from 'react';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 
 import { adminLogin, staffLogin, kitchenLogin } from '@/lib/actions';
 import { Button } from '@/components/ui/button';

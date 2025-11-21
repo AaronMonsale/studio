@@ -1,4 +1,3 @@
-
 'use client';
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,10 +11,14 @@ import { Label } from "@/components/ui/label";
 import { staffProfiles } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { PlusCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+type Role = 'staff' | 'kitchen';
 
 export default function EmployeesPage() {
     const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-2');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedRole, setSelectedRole] = useState<Role>('staff');
 
     const getInitials = (name: string) => {
         return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -36,7 +39,7 @@ export default function EmployeesPage() {
                         <DialogHeader>
                             <DialogTitle>Add New Employee</DialogTitle>
                             <DialogDescription>
-                                Fill in the details below to create a new staff profile.
+                                Fill in the details below to create a new user profile.
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
@@ -44,20 +47,38 @@ export default function EmployeesPage() {
                                 <Label htmlFor="name" className="text-right">
                                     Name
                                 </Label>
-                                <Input id="name" defaultValue="John Doe" className="col-span-3" />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="pin" className="text-right">
-                                    PIN
-                                </Label>
-                                <Input id="pin" type="password" placeholder="4-digit PIN" className="col-span-3" />
+                                <Input id="name" placeholder="John Doe" className="col-span-3" />
                             </div>
                              <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="role" className="text-right">
                                     Role
                                 </Label>
-                                <Input id="role" defaultValue="Staff" disabled className="col-span-3" />
+                                <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as Role)}>
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select a role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="staff">Staff</SelectItem>
+                                        <SelectItem value="kitchen">Kitchen</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
+                            {selectedRole === 'staff' && (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="pin" className="text-right">
+                                        PIN
+                                    </Label>
+                                    <Input id="pin" type="password" placeholder="4-digit PIN" className="col-span-3" />
+                                </div>
+                            )}
+                            {selectedRole === 'kitchen' && (
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="password" className="text-right">
+                                        Password
+                                    </Label>
+                                    <Input id="password" type="password" placeholder="Enter password" className="col-span-3" />
+                                </div>
+                            )}
                         </div>
                         <DialogFooter>
                             <Button type="submit" onClick={() => setIsDialogOpen(false)}>Create Profile</Button>

@@ -1,16 +1,25 @@
 'use client'
+import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { initialTables } from "@/lib/data";
 import { Ban, CircleDollarSign, Hand, Utensils } from "lucide-react";
-import { notFound } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function PosPage({ params }: { params: { tableId: string } }) {
+    const router = useRouter();
     const table = initialTables.find(t => t.id === params.tableId);
 
+    React.useEffect(() => {
+        if (!table) {
+            router.push('/staff');
+        }
+    }, [table, router]);
+
     if (!table) {
-        notFound();
+        // Render a loading state or null while redirecting
+        return null; 
     }
 
     return (

@@ -6,7 +6,7 @@ import { kitchenOrders } from "@/lib/data";
 import type { Order } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import { Ban, Check } from "lucide-react";
+import { Ban, Check, CheckCheck } from "lucide-react";
 
 function OrderCard({ order }: { order: Order }) {
     const timeAgo = formatDistanceToNow(new Date(order.timestamp), { addSuffix: true });
@@ -44,6 +44,12 @@ function OrderCard({ order }: { order: Order }) {
                      <Button size="sm" className="w-full">
                         <Check className="mr-2 h-4 w-4" />
                         Mark as Ready
+                    </Button>
+                )}
+                {order.status === 'Ready' && (
+                     <Button size="sm" variant="secondary" className="w-full">
+                        <CheckCheck className="mr-2 h-4 w-4" />
+                        Done
                     </Button>
                 )}
             </CardFooter>

@@ -96,10 +96,6 @@ export default function TablesPage() {
                                 <p className="mt-2 text-center font-medium">{table.name}</p>
                             </div>
                         ))}
-                         <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg aspect-square text-muted-foreground">
-                            <PlusCircle className="h-8 w-8" />
-                            <p className="mt-2 text-center text-sm">Add New Table</p>
-                        </div>
                     </div>
                 </CardContent>
             </Card>

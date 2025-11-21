@@ -37,6 +37,11 @@ export type SalesData = {
     total: number;
 };
 
+export type RevenueData = {
+  name: string;
+  revenue: number;
+}
+
 export type UserSession = {
   isLoggedIn: boolean;
   userType: 'admin' | 'staff' | 'kitchen';

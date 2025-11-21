@@ -1,6 +1,7 @@
 import { StatCard } from "@/components/dashboard/stat-card";
 import { SalesChart } from "@/components/dashboard/sales-chart";
-import { salesData, transactions } from "@/lib/data";
+import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import { dailyRevenue, weeklyRevenue, monthlyRevenue, annualRevenue, salesData, transactions } from "@/lib/data";
 import { DollarSign, Receipt, TrendingUp, Users } from "lucide-react";
 
 export default function DashboardPage() {
@@ -34,6 +35,15 @@ export default function DashboardPage() {
                 description="Number of unique customers"
                 Icon={Users}
             />
+
+            <div className="col-span-1 md:col-span-2 lg:col-span-4">
+                <RevenueChart 
+                    daily={dailyRevenue}
+                    weekly={weeklyRevenue}
+                    monthly={monthlyRevenue}
+                    annual={annualRevenue}
+                />
+            </div>
 
             <div className="col-span-1 md:col-span-2 lg:col-span-4">
                 <SalesChart data={salesData} />

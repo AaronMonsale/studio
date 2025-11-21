@@ -1,4 +1,4 @@
-import type { EmployeeAccount, Order, SalesData, StaffProfile, Transaction } from './types';
+import type { EmployeeAccount, Order, RevenueData, SalesData, StaffProfile, Transaction } from './types';
 
 // For demo purposes, admin credentials can be "stored" here.
 // In a real app, this should come from a secure source and be hashed.
@@ -100,6 +100,42 @@ export const kitchenOrders: Order[] = [
         status: 'Ready',
         timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
     },
+];
+
+// Revenue data for charts
+export const dailyRevenue: RevenueData[] = Array.from({ length: 24 }, (_, i) => ({
+  name: `${i}:00`,
+  revenue: Math.floor(Math.random() * 200) + 50,
+}));
+
+export const weeklyRevenue: RevenueData[] = [
+  { name: 'Mon', revenue: Math.floor(Math.random() * 3000) + 1000 },
+  { name: 'Tue', revenue: Math.floor(Math.random() * 3000) + 1000 },
+  { name: 'Wed', revenue: Math.floor(Math.random() * 3000) + 1000 },
+  { name: 'Thu', revenue: Math.floor(Math.random() * 3000) + 1000 },
+  { name: 'Fri', revenue: Math.floor(Math.random() * 3000) + 1000 },
+  { name: 'Sat', revenue: Math.floor(Math.random() * 3000) + 1000 },
+  { name: 'Sun', revenue: Math.floor(Math.random() * 3000) + 1000 },
+];
+
+export const monthlyRevenue: RevenueData[] = Array.from({ length: 30 }, (_, i) => ({
+  name: `Day ${i + 1}`,
+  revenue: Math.floor(Math.random() * 5000) + 2000,
+}));
+
+export const annualRevenue: RevenueData[] = [
+  { name: 'Jan', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'Feb', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'Mar', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'Apr', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'May', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'Jun', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'Jul', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'Aug', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'Sep', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'Oct', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'Nov', revenue: Math.floor(Math.random() * 50000) + 20000 },
+  { name: 'Dec', revenue: Math.floor(Math.random() * 50000) + 20000 },
 ];
 
 // Helper functions to interact with data

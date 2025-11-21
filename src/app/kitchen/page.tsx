@@ -1,21 +1,23 @@
 'use client';
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { kitchenOrders } from "@/lib/data";
 import type { Order } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { Ban, Check } from "lucide-react";
 
 function OrderCard({ order }: { order: Order }) {
     const timeAgo = formatDistanceToNow(new Date(order.timestamp), { addSuffix: true });
 
     return (
-        <Card className="w-full shadow-md hover:shadow-lg transition-shadow">
+        <Card className="w-full shadow-md hover:shadow-lg transition-shadow flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xl font-bold">Table {order.table}</CardTitle>
                 <Badge variant={order.status === 'New' ? 'destructive' : order.status === 'Preparing' ? 'secondary' : 'default'}>{order.status}</Badge>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-grow">
                 <ul className="space-y-2 py-4 border-t border-b">
                     {order.items.map(item => (
                         <li key={item.name} className="flex justify-between items-center">
@@ -26,6 +28,25 @@ function OrderCard({ order }: { order: Order }) {
                 </ul>
                 <p className="text-xs text-muted-foreground pt-2 text-right">{timeAgo}</p>
             </CardContent>
+            <CardFooter className="flex gap-2">
+                {order.status === 'New' && (
+                    <>
+                        <Button variant="destructive" size="sm" className="w-full">
+                            <Ban className="mr-2 h-4 w-4" />
+                            Cancel
+                        </Button>
+                        <Button size="sm" className="w-full">
+                            Accept Order
+                        </Button>
+                    </>
+                )}
+                {order.status === 'Preparing' && (
+                     <Button size="sm" className="w-full">
+                        <Check className="mr-2 h-4 w-4" />
+                        Mark as Ready
+                    </Button>
+                )}
+            </CardFooter>
         </Card>
     );
 }

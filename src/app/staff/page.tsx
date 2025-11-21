@@ -1,21 +1,49 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Terminal } from "lucide-react";
+'use client';
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { initialTables } from "@/lib/data";
+import type { Table } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { Table as TableIcon } from "lucide-react";
+import Link from "next/link";
+
+const statusColors = {
+    available: 'bg-green-100 border-green-300 text-green-800',
+    occupied: 'bg-red-100 border-red-300 text-red-800',
+    reserved: 'bg-yellow-100 border-yellow-300 text-yellow-800',
+}
+
+const statusText = {
+    available: 'Available',
+    occupied: 'Occupied',
+    reserved: 'Reserved',
+}
+
+function TableCard({ table }: { table: Table }) {
+    return (
+        <Link href={`/staff/pos/${table.id}`}>
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                <CardContent className="flex flex-col items-center justify-center p-4 aspect-square">
+                    <TableIcon className="h-8 w-8 text-muted-foreground mb-2" />
+                    <p className="font-bold text-lg">{table.name}</p>
+                    <Badge className={cn("mt-2 text-xs", statusColors[table.status])}>
+                        {statusText[table.status]}
+                    </Badge>
+                </CardContent>
+            </Card>
+        </Link>
+    );
+}
 
 export default function StaffPage() {
     return (
-        <div className="flex items-center justify-center h-full">
-            <Card className="w-full max-w-lg">
-                <CardHeader>
-                    <CardTitle>Staff POS Interface</CardTitle>
-                    <CardDescription>This is where the main point of sale terminal would be.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg">
-                        <Terminal className="h-16 w-16 text-muted-foreground" />
-                        <p className="mt-4 text-center text-muted-foreground">POS Terminal Under Construction</p>
-                    </div>
-                </CardContent>
-            </Card>
+        <div>
+            <h1 className="text-3xl font-bold font-headline tracking-tight mb-6">Select a Table</h1>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                {initialTables.map(table => (
+                    <TableCard key={table.id} table={table} />
+                ))}
+            </div>
         </div>
     );
 }

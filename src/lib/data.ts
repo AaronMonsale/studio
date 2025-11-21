@@ -1,4 +1,4 @@
-import type { EmployeeAccount, Order, RevenueData, SalesData, StaffProfile, Transaction } from './types';
+import type { EmployeeAccount, Order, RevenueData, SalesData, StaffProfile, Transaction, Table } from './types';
 
 // For demo purposes, admin credentials can be "stored" here.
 // In a real app, this should come from a secure source and be hashed.
@@ -137,6 +137,16 @@ export const annualRevenue: RevenueData[] = [
   { name: 'Nov', revenue: Math.floor(Math.random() * 50000) + 20000 },
   { name: 'Dec', revenue: Math.floor(Math.random() * 50000) + 20000 },
 ];
+
+export const initialTables: Table[] = [
+    { id: 't1', name: 'Table 1', status: 'available' },
+    { id: 't2', name: 'Table 2', status: 'occupied' },
+    { id: 't3', name: 'Terrace 1', status: 'reserved' },
+    { id: 't4', name: 'Table 3', status: 'available' },
+    { id: 't5', name: 'Table 4', status: 'available' },
+    { id: 't6', name: 'Terrace 2', status: 'occupied' },
+];
+
 
 // Helper functions to interact with data
 export const findStaffByPin = (pin: string): StaffProfile | undefined => {

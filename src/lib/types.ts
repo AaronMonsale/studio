@@ -48,3 +48,9 @@ export type UserSession = {
   name: string;
   id: string;
 };
+
+export type Table = {
+    id: string;
+    name: string;
+    status: 'available' | 'occupied' | 'reserved';
+};

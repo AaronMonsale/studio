@@ -7,17 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, Table as TableIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-type Table = {
-    id: string;
-    name: string;
-};
-
-const initialTables: Table[] = [
-    { id: 't1', name: 'Table 1' },
-    { id: 't2', name: 'Table 2' },
-    { id: 't3', name: 'Terrace 1' },
-];
+import { initialTables } from "@/lib/data";
+import type { Table } from "@/lib/types";
 
 export default function TablesPage() {
     const [tables, setTables] = useState<Table[]>(initialTables);

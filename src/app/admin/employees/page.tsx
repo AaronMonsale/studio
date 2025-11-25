@@ -1,29 +1,15 @@
-'use client';
-import { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { staffProfiles } from "@/lib/data";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { PlusCircle } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { listUsers, createUser } from "@/lib/admin-actions";
+import { UserRole } from "@prisma/client";
 
-type Role = 'staff' | 'kitchen';
+export default async function EmployeesPage() {
+    const users = await listUsers();
 
-export default function EmployeesPage() {
-    const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-2');
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [selectedRole, setSelectedRole] = useState<Role>('staff');
-
-    const getInitials = (name: string) => {
-        return name.split(' ').map(n => n[0]).join('').toUpperCase();
-    }
-    
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -31,98 +17,64 @@ export default function EmployeesPage() {
                     <h1 className="text-3xl font-bold font-headline tracking-tight">Employee Management</h1>
                     <p className="text-muted-foreground">Manage employee accounts and staff profiles.</p>
                 </div>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button><PlusCircle className="mr-2 h-4 w-4" />Add Employee</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                            <DialogTitle>Add New Employee</DialogTitle>
-                            <DialogDescription>
-                                Fill in the details below to create a new user profile.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="name" className="text-right">
-                                    Name
-                                </Label>
-                                <Input id="name" placeholder="John Doe" className="col-span-3" />
-                            </div>
-                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="role" className="text-right">
-                                    Role
-                                </Label>
-                                <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as Role)}>
-                                    <SelectTrigger className="col-span-3">
-                                        <SelectValue placeholder="Select a role" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="staff">Staff</SelectItem>
-                                        <SelectItem value="kitchen">Kitchen</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            {selectedRole === 'staff' && (
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="pin" className="text-right">
-                                        PIN
-                                    </Label>
-                                    <Input id="pin" type="password" placeholder="4-digit PIN" className="col-span-3" />
-                                </div>
-                            )}
-                            {selectedRole === 'kitchen' && (
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <Label htmlFor="password" className="text-right">
-                                        Password
-                                    </Label>
-                                    <Input id="password" type="password" placeholder="Enter password" className="col-span-3" />
-                                </div>
-                            )}
-                        </div>
-                        <DialogFooter>
-                            <Button type="submit" onClick={() => setIsDialogOpen(false)}>Create Profile</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
             </div>
-            
+
             <Card>
                 <CardHeader>
-                    <CardTitle>All Staff</CardTitle>
-                    <CardDescription>A list of all staff members in the system.</CardDescription>
+                    <CardTitle>Add Employee</CardTitle>
+                    <CardDescription>Create a new user account.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form action={createUser} className="grid gap-4 max-w-xl">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">Name</Label>
+                            <Input id="name" name="name" placeholder="John Doe" className="col-span-3" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="email" className="text-right">Email</Label>
+                            <Input id="email" name="email" type="email" placeholder="john@company.com" className="col-span-3" required />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="password" className="text-right">Password</Label>
+                            <Input id="password" name="password" type="password" placeholder="••••••" className="col-span-3" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="role" className="text-right">Role</Label>
+                            <select id="role" name="role" className="col-span-3 border rounded-md h-9 px-3">
+                                <option value="STAFF">Staff</option>
+                                <option value="KITCHEN">Kitchen</option>
+                            </select>
+                        </div>
+                        <div className="flex justify-end">
+                            <Button type="submit">Create Profile</Button>
+                        </div>
+                    </form>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>All Users</CardTitle>
+                    <CardDescription>A list of all users in the system.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Employee</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Email</TableHead>
                                 <TableHead>Role</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {staffProfiles.map(staff => (
-                                <TableRow key={staff.id}>
+                            {users.map((u) => (
+                                <TableRow key={u.id}>
+                                    <TableCell className="font-medium">{u.name || '—'}</TableCell>
+                                    <TableCell>{u.email}</TableCell>
                                     <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar>
-                                                <AvatarImage src={userAvatar?.imageUrl} data-ai-hint={userAvatar?.imageHint} />
-                                                <AvatarFallback>{getInitials(staff.name)}</AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="font-medium">{staff.name}</p>
-                                                <p className="text-sm text-muted-foreground">PIN: ****</p>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline">Staff</Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="icon">
-                                            ...
-                                        </Button>
+                                        <Badge variant="outline">
+                                            {u.role === UserRole.ADMIN ? 'Admin' : u.role === UserRole.KITCHEN ? 'Kitchen' : 'Staff'}
+                                        </Badge>
                                     </TableCell>
                                 </TableRow>
                             ))}

@@ -37,6 +37,7 @@ model MenuCategory {
   name     String
   position Int        @default(0)
   items    MenuItem[]
+  discounts Discount[]
 }
 
 model MenuItem {
@@ -48,6 +49,7 @@ model MenuItem {
   categoryId  String?
   category    MenuCategory? @relation(fields: [categoryId], references: [id])
   orderItems  OrderItem[]
+  discountItems DiscountItem[]
 
   @@index([categoryId])
 }
@@ -100,6 +102,32 @@ model Transaction {
   order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
+model Discount {
+  id          String        @id @default(uuid())
+  name        String
+  type        DiscountType
+  value       Decimal       @db.Decimal(10, 2)
+  active      Boolean       @default(true)
+  categoryId  String
+  category    MenuCategory  @relation(fields: [categoryId], references: [id])
+  items       DiscountItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([categoryId])
+}
+
+model DiscountItem {
+  id          String    @id @default(uuid())
+  discountId  String
+  menuItemId  String
+  discount    Discount  @relation(fields: [discountId], references: [id], onDelete: Cascade)
+  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  @@unique([discountId, menuItemId])
+  @@index([menuItemId])
+}
+
 enum UserRole {
   ADMIN
   STAFF
@@ -128,4 +156,9 @@ enum PaymentStatus {
   SUCCESS
   FAILED
   PENDING
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
 }

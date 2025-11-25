@@ -7,7 +7,7 @@ import {
     SidebarMenuItem,
     SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Receipt, Users, Settings, Table, Utensils } from "lucide-react";
+import { LayoutDashboard, Receipt, Users, Settings, Table, Utensils, Percent } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -15,6 +15,7 @@ const navItems = [
     { href: "/admin/transactions", label: "Transactions", icon: Receipt },
     { href: "/admin/tables", label: "Tables", icon: Table },
     { href: "/admin/menu", label: "Menu", icon: Utensils },
+    { href: "/admin/discounts", label: "Discounts", icon: Percent },
     { href: "/admin/employees", label: "Employees", icon: Users },
     { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

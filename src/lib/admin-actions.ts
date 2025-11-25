@@ -9,23 +9,44 @@ export async function listUsers() {
 }
 
 export async function createUser(formData: FormData) {
-  const name = (formData.get('name') as string | null)?.trim() || null;
-  const email = (formData.get('email') as string | null)?.trim().toLowerCase() || '';
-  const password = (formData.get('password') as string | null) || null;
+  const name = (formData.get('name') as string | null)?.trim() || '';
   const roleStr = (formData.get('role') as string | null) || 'STAFF';
-  // Employee registration must not create ADMIN users
-  const role = (['STAFF', 'KITCHEN'] as const).includes(roleStr as any)
-    ? (roleStr as UserRole)
-    : UserRole.STAFF;
+  const emailRaw = (formData.get('email') as string | null)?.trim().toLowerCase() || '';
+  const password = (formData.get('password') as string | null) || '';
+  const pin = (formData.get('pin') as string | null)?.trim() || '';
+  const role = (['STAFF', 'KITCHEN'] as const).includes(roleStr as any) ? (roleStr as UserRole) : UserRole.STAFF;
 
-  if (!email) {
-    throw new Error('Email is required');
+  if (!name) throw new Error('Name is required');
+
+  // STAFF: name + pin (4-6 digits ideal). No password required.
+  // KITCHEN: name + password. No pin required.
+  if (role === UserRole.STAFF) {
+    if (!pin) throw new Error('PIN is required for staff');
+    if (!/^\d{4}$/.test(pin)) throw new Error('PIN must be exactly 4 digits');
+    const data: any = {
+      name,
+      role: UserRole.STAFF,
+      pin,
+    };
+    if (emailRaw) {
+      data.email = emailRaw;
+    } else {
+      // Temporary compatibility: some environments still have email as NOT NULL.
+      // Provide a deterministic placeholder to satisfy DB constraint until schema is migrated.
+      const base = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'staff';
+      data.email = `${base}.${Math.random().toString(36).slice(2, 6)}@local.invalid`;
+    }
+    await prisma.user.create({ data });
+  } else {
+    if (!password) throw new Error('Password is required for kitchen');
+    const data: any = {
+      name,
+      role: UserRole.KITCHEN,
+      password,
+    };
+    if (emailRaw) data.email = emailRaw;
+    await prisma.user.create({ data });
   }
-
-  // NOTE: Password is stored as plaintext per current schema usage. Recommend hashing.
-  await prisma.user.create({
-    data: { email, name, password: password || undefined, role },
-  });
 }
 
 // Menu

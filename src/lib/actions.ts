@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { ADMIN_CREDENTIALS, KITCHEN_CREDENTIALS, findStaffByPin } from './data';
+import { ADMIN_CREDENTIALS } from './data';
 import type { UserSession } from './types';
 import prisma from '@/lib/db';
 import { UserRole } from '@prisma/client';
@@ -47,52 +47,79 @@ export async function adminLogin(prevState: AuthState | undefined, formData: For
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
-  if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
-    const sessionData: UserSession = {
+  if (!email || !password) return { error: 'Email and password are required.' };
+
+  // Try database first
+  try {
+    const user = await prisma.user.findFirst({ where: { email: email.toLowerCase(), password, role: UserRole.ADMIN } });
+    if (user) {
+      const sessionData: UserSession = {
         isLoggedIn: true,
         userType: 'admin',
-        name: ADMIN_CREDENTIALS.name,
-        id: ADMIN_CREDENTIALS.id,
+        name: user.name || 'Admin',
+        id: user.id,
+      };
+      await createSession(sessionData, '/admin/dashboard');
+      return {};
+    }
+  } catch {
+    // ignore and try static fallback
+  }
+
+  // Fallback to static credentials
+  if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+    const sessionData: UserSession = {
+      isLoggedIn: true,
+      userType: 'admin',
+      name: ADMIN_CREDENTIALS.name,
+      id: ADMIN_CREDENTIALS.id,
     };
     await createSession(sessionData, '/admin/dashboard');
     return {};
-  } else {
-    return { error: 'Invalid email or password.' };
   }
+
+  return { error: 'Invalid email or password.' };
 }
 
 export async function staffLogin(prevState: AuthState | undefined, formData: FormData): Promise<AuthState> {
-  const pin = formData.get('pin') as string;
-  const staffMember = findStaffByPin(pin);
+  const pin = (formData.get('pin') as string | null)?.trim() || '';
+  if (!pin) return { error: 'PIN is required.' };
 
-  if (staffMember) {
-     const sessionData: UserSession = {
-        isLoggedIn: true,
-        userType: 'staff',
-        name: staffMember.name,
-        id: staffMember.id,
+  try {
+    const user = await (prisma as any).user.findFirst({ where: { role: UserRole.STAFF, pin } });
+    if (!user) return { error: 'Invalid PIN. Please try again.' };
+
+    const sessionData: UserSession = {
+      isLoggedIn: true,
+      userType: 'staff',
+      name: user.name || 'Staff',
+      id: user.id,
     };
     await createSession(sessionData, '/staff');
     return {};
-  } else {
-    return { error: 'Invalid PIN. Please try again.' };
+  } catch {
+    return { error: 'Login failed. Please try again.' };
   }
 }
 
 export async function kitchenLogin(prevState: AuthState | undefined, formData: FormData): Promise<AuthState> {
-  const password = formData.get('password') as string;
+  const password = (formData.get('password') as string | null) || '';
+  if (!password) return { error: 'Password is required.' };
 
-  if (password === KITCHEN_CREDENTIALS.password) {
+  try {
+    const user = await (prisma as any).user.findFirst({ where: { role: UserRole.KITCHEN, password } });
+    if (!user) return { error: 'Incorrect password for Kitchen Display.' };
+
     const sessionData: UserSession = {
-        isLoggedIn: true,
-        userType: 'kitchen',
-        name: KITCHEN_CREDENTIALS.name,
-        id: KITCHEN_CREDENTIALS.id
+      isLoggedIn: true,
+      userType: 'kitchen',
+      name: user.name || 'Kitchen',
+      id: user.id,
     };
     await createSession(sessionData, '/kitchen');
     return {};
-  } else {
-    return { error: 'Incorrect password for Kitchen Display.' };
+  } catch {
+    return { error: 'Login failed. Please try again.' };
   }
 }
 

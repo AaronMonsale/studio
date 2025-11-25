@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { EmployeesForm } from "@/components/admin/employees-form";
 import { Label } from "@/components/ui/label";
 import { listUsers, createUser } from "@/lib/admin-actions";
 import { UserRole } from "@prisma/client";
@@ -22,33 +23,10 @@ export default async function EmployeesPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Add Employee</CardTitle>
-                    <CardDescription>Create a new user account.</CardDescription>
+                    <CardDescription>Create a new Staff (name + PIN) or Kitchen (name + password) account. Email is optional.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form action={createUser} className="grid gap-4 max-w-xl">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="name" className="text-right">Name</Label>
-                            <Input id="name" name="name" placeholder="John Doe" className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="email" className="text-right">Email</Label>
-                            <Input id="email" name="email" type="email" placeholder="john@company.com" className="col-span-3" required />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="password" className="text-right">Password</Label>
-                            <Input id="password" name="password" type="password" placeholder="••••••" className="col-span-3" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="role" className="text-right">Role</Label>
-                            <select id="role" name="role" className="col-span-3 border rounded-md h-9 px-3">
-                                <option value="STAFF">Staff</option>
-                                <option value="KITCHEN">Kitchen</option>
-                            </select>
-                        </div>
-                        <div className="flex justify-end">
-                            <Button type="submit">Create Profile</Button>
-                        </div>
-                    </form>
+                    <EmployeesForm />
                 </CardContent>
             </Card>
 

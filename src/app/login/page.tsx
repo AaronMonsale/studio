@@ -3,7 +3,7 @@ import React from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 
-import { adminLogin, staffLogin, kitchenLogin } from '@/lib/actions';
+import { adminLogin, staffLogin, kitchenLogin, registerAdmin } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,6 +27,8 @@ export default function LoginPage() {
   const [adminState, adminAction] = useActionState(adminLogin, undefined);
   const [staffState, staffAction] = useActionState(staffLogin, undefined);
   const [kitchenState, kitchenAction] = useActionState(kitchenLogin, undefined);
+  const [registerState, registerAction] = useActionState(registerAdmin, undefined);
+  const [showRegister, setShowRegister] = React.useState(false);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
@@ -64,32 +66,67 @@ export default function LoginPage() {
         
         {/* Admin Login */}
         <TabsContent value="admin">
-          <Card>
-            <CardHeader>
-              <CardTitle>Admin Login</CardTitle>
-              <CardDescription>Access the administrative dashboard.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form action={adminAction} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" placeholder="admin@example.com" required defaultValue="admin@swiftpos.com"/>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input id="password" name="password" type="password" required defaultValue="admin"/>
-                </div>
-                {adminState?.error && (
-                    <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Login Failed</AlertTitle>
-                        <AlertDescription>{adminState.error}</AlertDescription>
-                    </Alert>
-                )}
-                <SubmitButton>Sign In</SubmitButton>
-              </form>
-            </CardContent>
-          </Card>
+          {!showRegister ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Admin Login</CardTitle>
+                <CardDescription>Access the administrative dashboard.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form action={adminAction} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" name="email" type="email" placeholder="admin@example.com" required defaultValue="admin@swiftpos.com"/>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input id="password" name="password" type="password" required defaultValue="admin"/>
+                  </div>
+                  {adminState?.error && (
+                      <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Login Failed</AlertTitle>
+                          <AlertDescription>{adminState.error}</AlertDescription>
+                      </Alert>
+                  )}
+                  <SubmitButton>Sign In</SubmitButton>
+                  <Button type="button" variant="ghost" className="w-full" onClick={() => setShowRegister(true)}>Register Admin</Button>
+                </form>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Register Admin</CardTitle>
+                <CardDescription>Create an administrator account.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form action={registerAction} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input id="name" name="name" type="text" placeholder="Jane Doe" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-email">Email</Label>
+                    <Input id="reg-email" name="email" type="email" placeholder="admin@example.com" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reg-password">Password</Label>
+                    <Input id="reg-password" name="password" type="password" required />
+                  </div>
+                  {registerState?.error && (
+                      <Alert variant="destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Registration Failed</AlertTitle>
+                          <AlertDescription>{registerState.error}</AlertDescription>
+                      </Alert>
+                  )}
+                  <SubmitButton>Create Admin Account</SubmitButton>
+                  <Button type="button" variant="ghost" className="w-full" onClick={() => setShowRegister(false)}>Back to Sign In</Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Kitchen Login */}

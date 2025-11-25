@@ -46,17 +46,21 @@ export default async function DiscountsPage() {
                   <th className="py-2 pr-4">Type</th>
                   <th className="py-2 pr-4">Value</th>
                   <th className="py-2 pr-4">Category</th>
+                  <th className="py-2 pr-4">Starts</th>
+                  <th className="py-2 pr-4">Ends</th>
                   <th className="py-2 pr-4">Items</th>
                   <th className="py-2 pr-4">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {discounts.map((d: { id: string; name: string; type: 'PERCENT' | 'FIXED'; value: number | string; category: { name: string }; items: any[]; active: boolean }) => (
+                {discounts.map((d: any) => (
                   <tr key={d.id} className="border-t">
                     <td className="py-2 pr-4 font-medium">{d.name}</td>
                     <td className="py-2 pr-4">{d.type === 'PERCENT' ? 'Percentage' : 'Fixed'}</td>
                     <td className="py-2 pr-4">{d.type === 'PERCENT' ? `${Number(d.value)}%` : `$${Number(d.value).toFixed(2)}`}</td>
                     <td className="py-2 pr-4">{d.category.name}</td>
+                    <td className="py-2 pr-4">{d.startsAt ? new Date(d.startsAt).toLocaleString() : '—'}</td>
+                    <td className="py-2 pr-4">{d.endsAt ? new Date(d.endsAt).toLocaleString() : '—'}</td>
                     <td className="py-2 pr-4">{d.items.length}</td>
                     <td className="py-2 pr-4">{d.active ? 'Active' : 'Inactive'}</td>
                   </tr>

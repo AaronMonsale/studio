@@ -37,6 +37,14 @@ export function DiscountForm({ categories }: { categories: Category[] }) {
         <Input id="value" name="value" type="number" step="0.01" placeholder="e.g., 5 or 10" className="col-span-3" required />
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="startsAt" className="text-right">Starts at</Label>
+        <Input id="startsAt" name="startsAt" type="datetime-local" className="col-span-3" />
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="endsAt" className="text-right">Ends at</Label>
+        <Input id="endsAt" name="endsAt" type="datetime-local" className="col-span-3" />
+      </div>
+      <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="categoryId" className="text-right">Category</Label>
         <select
           id="categoryId"

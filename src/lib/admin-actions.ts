@@ -92,7 +92,7 @@ export async function listTransactions() {
 
 // Discounts
 export async function listDiscounts() {
-  return prisma.discount.findMany({
+  return (prisma as any).discount.findMany({
     orderBy: { createdAt: 'desc' },
     include: { category: true, items: { include: { menuItem: true } } },
   });
@@ -104,17 +104,23 @@ export async function createDiscount(formData: FormData) {
   const value = Number((formData.get('value') as string | null) || '0');
   const categoryId = (formData.get('categoryId') as string | null) || '';
   const itemIds = formData.getAll('itemIds').map(String).filter(Boolean);
+  const startsAtRaw = (formData.get('startsAt') as string | null) || '';
+  const endsAtRaw = (formData.get('endsAt') as string | null) || '';
+  const startsAt = startsAtRaw ? new Date(startsAtRaw) : null;
+  const endsAt = endsAtRaw ? new Date(endsAtRaw) : null;
 
   if (!name) throw new Error('Name is required');
   if (!categoryId) throw new Error('Category is required');
   if (!(value > 0)) throw new Error('Value must be greater than 0');
 
-  await prisma.discount.create({
+  await (prisma as any).discount.create({
     data: {
       name,
       type: type as any,
       value,
       categoryId,
+      startsAt: startsAt || undefined,
+      endsAt: endsAt || undefined,
       items: {
         create: itemIds.map((menuItemId) => ({ menuItemId })),
       },

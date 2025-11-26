@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { listMenu, listDiscounts } from "@/lib/admin-actions";
 import { DiscountForm } from "@/components/admin/discount-form";
+import { EditDiscountButton } from "@/components/admin/edit-discount-button";
+import { DeleteDiscountButton } from "@/components/admin/delete-discount-button";
 
 export default async function DiscountsPage() {
   // Fetch categories with their items for selection, and existing discounts for listing
@@ -50,6 +52,7 @@ export default async function DiscountsPage() {
                   <th className="py-2 pr-4">Ends</th>
                   <th className="py-2 pr-4">Items</th>
                   <th className="py-2 pr-4">Status</th>
+                  <th className="py-2 pr-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -63,6 +66,24 @@ export default async function DiscountsPage() {
                     <td className="py-2 pr-4">{d.endsAt ? new Date(d.endsAt).toLocaleString() : '—'}</td>
                     <td className="py-2 pr-4">{d.items.length}</td>
                     <td className="py-2 pr-4">{d.active ? 'Active' : 'Inactive'}</td>
+                    <td className="py-2 pr-4 text-right">
+                      <div className="inline-flex gap-2">
+                        <EditDiscountButton
+                          discount={{
+                            id: d.id,
+                            name: d.name,
+                            type: d.type,
+                            value: Number(d.value),
+                            categoryId: d.category.id,
+                            startsAt: d.startsAt ? new Date(d.startsAt).toISOString() : null,
+                            endsAt: d.endsAt ? new Date(d.endsAt).toISOString() : null,
+                            active: Boolean(d.active),
+                          }}
+                          categories={simpleCategories}
+                        />
+                        <DeleteDiscountButton id={d.id} />
+                      </div>
+                    </td>
                   </tr>
                 ))}
                 {discounts.length === 0 && (

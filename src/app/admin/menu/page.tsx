@@ -5,6 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { listMenu, createCategory, createMenuItem } from "@/lib/admin-actions";
+import { DeleteCategoryButton } from "@/components/admin/delete-category-button";
+import { DeleteMenuItemButton } from "@/components/admin/delete-menu-item-button";
+import { EditCategoryButton } from "@/components/admin/edit-category-button";
+import { EditMenuItemButton } from "@/components/admin/edit-menu-item-button";
 
 export default async function MenuPage() {
     const categories = await listMenu();
@@ -45,7 +49,13 @@ export default async function MenuPage() {
                     <Accordion type="single" collapsible className="w-full">
                         {categories.map((category) => (
                             <AccordionItem value={category.id} key={category.id}>
-                                <AccordionTrigger className="text-lg font-medium">{category.name}</AccordionTrigger>
+                                <AccordionTrigger className="text-lg font-medium">
+                                    {category.name}
+                                </AccordionTrigger>
+                                <div className="flex justify-end gap-2 pr-2 pb-2">
+                                    <EditCategoryButton categoryId={category.id} name={category.name} />
+                                    <DeleteCategoryButton categoryId={category.id} />
+                                </div>
                                 <AccordionContent>
                                     <div className="space-y-4">
                                         {category.items.length > 0 ? (
@@ -58,7 +68,13 @@ export default async function MenuPage() {
                                                                 <p className="text-sm text-muted-foreground">{item.description}</p>
                                                             ) : null}
                                                         </div>
-                                                        <p className="font-bold">${Number(item.price).toFixed(2)}</p>
+                                                        <div className="flex items-center gap-3">
+                                                            <p className="font-bold">${Number(item.price).toFixed(2)}</p>
+                                                            <div className="flex items-center gap-2">
+                                                                <EditMenuItemButton item={{ id: item.id, name: item.name, price: Number(item.price), description: item.description ?? '' }} />
+                                                                <DeleteMenuItemButton itemId={item.id} />
+                                                            </div>
+                                                        </div>
                                                     </li>
                                                 ))}
                                             </ul>

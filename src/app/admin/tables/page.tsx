@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table as TableIcon } from "lucide-react";
 import { listTables, createTable, bulkCreateTables } from "@/lib/admin-actions";
+import { EditTableButton } from "@/components/admin/edit-table-button";
+import { DeleteTableButton } from "@/components/admin/delete-table-button";
 
 export default async function TablesPage() {
     const tables = await listTables();
@@ -71,10 +73,14 @@ export default async function TablesPage() {
                 <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         {tables.map(table => (
-                            <div key={table.id} className="flex flex-col items-center justify-center p-4 border rounded-lg aspect-square">
+                            <div key={table.id} className="flex flex-col items-center justify-between p-4 border rounded-lg aspect-square">
                                 <TableIcon className="h-8 w-8 text-muted-foreground" />
                                 <p className="mt-2 text-center font-medium">{table.label}</p>
                                 <p className="text-xs text-muted-foreground">Cap. {table.capacity} • {table.status.toLowerCase()}</p>
+                                <div className="mt-2 flex items-center gap-2">
+                                    <EditTableButton table={{ id: table.id, label: table.label, capacity: table.capacity, status: table.status as any }} />
+                                    <DeleteTableButton id={table.id} />
+                                </div>
                             </div>
                         ))}
                     </div>

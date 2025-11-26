@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { EmployeesForm } from "@/components/admin/employees-form";
 import { Label } from "@/components/ui/label";
 import { listUsers, createUser } from "@/lib/admin-actions";
+import { DeleteUserButton } from "@/components/admin/delete-user-button";
 import { UserRole } from "@prisma/client";
 
 export default async function EmployeesPage() {
@@ -42,6 +43,7 @@ export default async function EmployeesPage() {
                                 <TableHead>Name</TableHead>
                                 <TableHead>Email</TableHead>
                                 <TableHead>Role</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -53,6 +55,9 @@ export default async function EmployeesPage() {
                                         <Badge variant="outline">
                                             {u.role === UserRole.ADMIN ? 'Admin' : u.role === UserRole.KITCHEN ? 'Kitchen' : 'Staff'}
                                         </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <DeleteUserButton userId={u.id} />
                                     </TableCell>
                                 </TableRow>
                             ))}

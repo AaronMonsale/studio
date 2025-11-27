@@ -68,21 +68,21 @@ export async function adminLogin(prevState: AuthState | undefined, formData: For
   if (!email || !password) return { error: 'Email and password are required.' };
 
   // Try database first with a safe retry (avoid false negatives on first attempt)
+  let dbUser: { id: string; name: string | null } | null = null;
   try {
-    const user = await withDbRetry(() => prisma.user.findFirst({ where: { email: email.toLowerCase(), password, role: UserRole.ADMIN } }));
-    if (user) {
-      const sessionData: UserSession = {
-        isLoggedIn: true,
-        userType: 'admin',
-        name: user.name || 'Admin',
-        id: user.id,
-      };
-      await createSession(sessionData, '/admin/dashboard');
-      return {};
-    }
+    dbUser = await withDbRetry(() => prisma.user.findFirst({ where: { email: email.toLowerCase(), password, role: UserRole.ADMIN } }));
   } catch {
-    // If DB fails, do NOT incorrectly report invalid creds if static creds don't match.
-    // We continue to static check below; otherwise, show a generic error.
+    // ignore here, fallback checks below
+  }
+  if (dbUser) {
+    const sessionData: UserSession = {
+      isLoggedIn: true,
+      userType: 'admin',
+      name: dbUser.name || 'Admin',
+      id: dbUser.id,
+    };
+    await createSession(sessionData, '/admin/dashboard');
+    return {};
   }
 
   // Fallback to static credentials
@@ -104,42 +104,44 @@ export async function staffLogin(prevState: AuthState | undefined, formData: For
   const pin = (formData.get('pin') as string | null)?.trim() || '';
   if (!pin) return { error: 'PIN is required.' };
 
+  let user: { id: string; name: string | null } | null = null;
   try {
-    const user = await withDbRetry(() => prisma.user.findFirst({ where: { role: UserRole.STAFF, pin } }));
-    if (!user) return { error: 'Invalid PIN. Please try again.' };
-
-    const sessionData: UserSession = {
-      isLoggedIn: true,
-      userType: 'staff',
-      name: user.name || 'Staff',
-      id: user.id,
-    };
-    await createSession(sessionData, '/staff');
-    return {};
+    user = await withDbRetry(() => prisma.user.findFirst({ where: { role: UserRole.STAFF, pin } }));
   } catch {
-    return { error: 'Login failed. Please try again.' };
+    // fall through to error
   }
+  if (!user) return { error: 'Invalid PIN. Please try again.' };
+
+  const sessionData: UserSession = {
+    isLoggedIn: true,
+    userType: 'staff',
+    name: user.name || 'Staff',
+    id: user.id,
+  };
+  await createSession(sessionData, '/staff');
+  return {}
 }
 
 export async function kitchenLogin(prevState: AuthState | undefined, formData: FormData): Promise<AuthState> {
   const password = (formData.get('password') as string | null) || '';
   if (!password) return { error: 'Password is required.' };
 
+  let user: { id: string; name: string | null } | null = null;
   try {
-    const user = await withDbRetry(() => prisma.user.findFirst({ where: { role: UserRole.KITCHEN, password } }));
-    if (!user) return { error: 'Incorrect password for Kitchen Display.' };
-
-    const sessionData: UserSession = {
-      isLoggedIn: true,
-      userType: 'kitchen',
-      name: user.name || 'Kitchen',
-      id: user.id,
-    };
-    await createSession(sessionData, '/kitchen');
-    return {};
+    user = await withDbRetry(() => prisma.user.findFirst({ where: { role: UserRole.KITCHEN, password } }));
   } catch {
-    return { error: 'Login failed. Please try again.' };
+    // fall through
   }
+  if (!user) return { error: 'Incorrect password for Kitchen Display.' };
+
+  const sessionData: UserSession = {
+    isLoggedIn: true,
+    userType: 'kitchen',
+    name: user.name || 'Kitchen',
+    id: user.id,
+  };
+  await createSession(sessionData, '/kitchen');
+  return {};
 }
 
 export async function registerAdmin(prevState: AuthState | undefined, formData: FormData): Promise<AuthState> {
@@ -159,8 +161,11 @@ export async function registerAdmin(prevState: AuthState | undefined, formData: 
     if (existing) {
       return { error: 'An account with this email already exists.' };
     }
+  } catch {}
 
-    const user = await withDbRetry(() => prisma.user.create({
+  let created: { id: string; name: string | null } | null = null;
+  try {
+    created = await withDbRetry(() => prisma.user.create({
       data: {
         email,
         name,
@@ -168,16 +173,17 @@ export async function registerAdmin(prevState: AuthState | undefined, formData: 
         role: UserRole.ADMIN,
       },
     }));
-
-    const sessionData: UserSession = {
-      isLoggedIn: true,
-      userType: 'admin',
-      name: user.name || 'Admin',
-      id: user.id,
-    };
-    await createSession(sessionData, '/admin/dashboard');
-    return {};
-  } catch (e) {
+  } catch {
     return { error: 'Registration failed. Please try again.' };
   }
+
+  // Important: do not wrap redirect in try/catch, so Next.js can interrupt the action
+  const sessionData: UserSession = {
+    isLoggedIn: true,
+    userType: 'admin',
+    name: (created?.name as string | undefined) || 'Admin',
+    id: created!.id,
+  };
+  await createSession(sessionData, '/admin/dashboard');
+  return {};
 }

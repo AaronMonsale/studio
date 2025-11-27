@@ -76,11 +76,11 @@ export default function LoginPage() {
                 <form action={adminAction} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" name="email" type="email" placeholder="admin@example.com" required defaultValue="admin@swiftpos.com"/>
+                    <Input id="email" name="email" type="email" placeholder="admin@example.com" required />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
-                    <Input id="password" name="password" type="password" required defaultValue="admin"/>
+                    <Input id="password" name="password" type="password" required />
                   </div>
                   {adminState?.error && (
                       <Alert variant="destructive">
@@ -140,7 +140,7 @@ export default function LoginPage() {
               <form action={kitchenAction} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="kitchen-password">Password</Label>
-                  <Input id="kitchen-password" name="password" type="password" required defaultValue="kitchen" />
+                  <Input id="kitchen-password" name="password" type="password" required />
                 </div>
                  {kitchenState?.error && (
                     <Alert variant="destructive">

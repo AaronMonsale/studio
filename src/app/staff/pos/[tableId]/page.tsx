@@ -3,13 +3,14 @@ import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Ban, CircleDollarSign, Hand } from "lucide-react";
+import { Ban, CircleDollarSign, Hand, ArrowLeft } from "lucide-react";
 import { listMenu } from "@/lib/admin-actions";
 import prisma from "@/lib/db";
 import { redirect } from "next/navigation";
 import { MenuTilesController } from "@/components/pos/menu-tiles-controller";
 import { addItemToOrder, markTableOccupied, reserveTable, cancelReservation } from "@/lib/pos-actions";
 import { PosActions } from "@/components/pos/pos-actions";
+import Link from "next/link";
 
 export default async function PosPage({ params }: { params: Promise<{ tableId: string }> }) {
     const { tableId } = await params;
@@ -69,6 +70,14 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
             <div>
                 <Card className="sticky top-20">
                     <CardHeader>
+                        <div className="mb-2">
+                            <Link href="/staff">
+                                <Button variant="ghost" size="sm">
+                                    <ArrowLeft className="mr-2 h-4 w-4" />
+                                    Back to Tables
+                                </Button>
+                            </Link>
+                        </div>
                         <CardTitle className="flex justify-between items-center">
                             <span>{tableName}</span>
                             <Badge variant={
@@ -99,10 +108,15 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
                         </form>
                         {/* Client control renders the two buttons and submits these forms */}
                         <PosActions tableId={tableId} />
-                        <form action={cancelReservation} className="w-full">
-                            <input type="hidden" name="tableId" value={tableId} />
-                            <Button variant="destructive" className="w-full"><Ban className="mr-2"/>Cancel</Button>
-                        </form>
+                        {tableStatus === 'reserved' && reservationName && (
+                            <form action={cancelReservation} className="w-full">
+                                <input type="hidden" name="tableId" value={tableId} />
+                                <Button variant="destructive" className="w-full">
+                                    <Ban className="mr-2"/>
+                                    Cancel Reservation
+                                </Button>
+                            </form>
+                        )}
                     </CardFooter>
                 </Card>
             </div>

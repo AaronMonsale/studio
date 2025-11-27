@@ -11,6 +11,7 @@ import {
 import { Logo } from "@/components/logo";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { Header } from "@/components/header";
+import { WelcomeToast } from "@/components/welcome-toast";
 
 export default async function AdminLayout({
   children,
@@ -41,6 +42,7 @@ export default async function AdminLayout({
                 <Header user={session} />
             </header>
             <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+              <WelcomeToast name={session.name} />
               {children}
             </main>
         </div>

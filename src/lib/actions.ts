@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { ADMIN_CREDENTIALS } from './data';
+import { ADMIN_CREDENTIALS, findStaffByPin } from './data';
 import type { UserSession } from './types';
 import prisma from '@/lib/db';
 import { UserRole } from '@prisma/client';
@@ -86,7 +86,7 @@ export async function staffLogin(prevState: AuthState | undefined, formData: For
   if (!pin) return { error: 'PIN is required.' };
 
   try {
-    const user = await (prisma as any).user.findFirst({ where: { role: UserRole.STAFF, pin } });
+    const user = await prisma.user.findFirst({ where: { role: UserRole.STAFF, pin } });
     if (!user) return { error: 'Invalid PIN. Please try again.' };
 
     const sessionData: UserSession = {

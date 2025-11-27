@@ -9,7 +9,7 @@ import { Delete } from 'lucide-react';
 export function PinInput() {
   const [pin, setPin] = useState('');
   const { pending } = useFormStatus();
-  const formRef = useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
 
   const handleNumberClick = (num: string) => {
     if (pin.length < 4) {
@@ -28,13 +28,12 @@ export function PinInput() {
   useEffect(() => {
     if (pin.length === 4) {
       // Automatically submit the form
-      const form = formRef.current;
-      if (form) {
-        // We need to find the parent form of the button that was clicked to open the pin input
-        const parentForm = form.closest('form');
+      const container = formRef.current;
+      if (container) {
+        const parentForm = container.closest('form') as HTMLFormElement | null;
         if (parentForm) {
-            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-            parentForm.dispatchEvent(submitEvent);
+          // Use the standards-compliant way to submit forms programmatically
+          parentForm.requestSubmit();
         }
       }
     }
@@ -80,3 +79,4 @@ export function PinInput() {
     </div>
   );
 }
+

@@ -3,6 +3,7 @@ import { getSession } from "@/lib/actions";
 import { redirect } from "next/navigation";
 import { UserNav } from "@/components/user-nav";
 import { Logo } from "@/components/logo";
+import { WelcomeToast } from "@/components/welcome-toast";
 
 export default async function KitchenLayout({
   children,
@@ -22,7 +23,10 @@ export default async function KitchenLayout({
                 <UserNav user={session} />
             </div>
         </header>
-        <main className="flex-1 bg-secondary/40 p-4 sm:p-6">{children}</main>
+        <main className="flex-1 bg-secondary/40 p-4 sm:p-6">
+          <WelcomeToast name={session.name} />
+          {children}
+        </main>
     </div>
   );
 }

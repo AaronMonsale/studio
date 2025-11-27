@@ -9,6 +9,24 @@ import { UserRole } from '@prisma/client';
 
 const COOKIE_NAME = 'swiftpos-session';
 
+async function ensureDbConnected() {
+  try {
+    await (prisma as any).$connect?.();
+  } catch {}
+}
+
+async function withDbRetry<T>(fn: () => Promise<T>): Promise<T> {
+  await ensureDbConnected();
+  try {
+    return await fn();
+  } catch (e) {
+    // brief backoff and retry once to smooth over cold-start/hot-reload hiccups
+    await new Promise((r) => setTimeout(r, 100));
+    await ensureDbConnected();
+    return await fn();
+  }
+}
+
 async function createSession(sessionData: UserSession, redirectTo: string) {
   const cookieStore = await cookies();
   cookieStore.set(COOKIE_NAME, JSON.stringify(sessionData), {
@@ -49,9 +67,9 @@ export async function adminLogin(prevState: AuthState | undefined, formData: For
 
   if (!email || !password) return { error: 'Email and password are required.' };
 
-  // Try database first
+  // Try database first with a safe retry (avoid false negatives on first attempt)
   try {
-    const user = await prisma.user.findFirst({ where: { email: email.toLowerCase(), password, role: UserRole.ADMIN } });
+    const user = await withDbRetry(() => prisma.user.findFirst({ where: { email: email.toLowerCase(), password, role: UserRole.ADMIN } }));
     if (user) {
       const sessionData: UserSession = {
         isLoggedIn: true,
@@ -63,7 +81,8 @@ export async function adminLogin(prevState: AuthState | undefined, formData: For
       return {};
     }
   } catch {
-    // ignore and try static fallback
+    // If DB fails, do NOT incorrectly report invalid creds if static creds don't match.
+    // We continue to static check below; otherwise, show a generic error.
   }
 
   // Fallback to static credentials
@@ -86,7 +105,7 @@ export async function staffLogin(prevState: AuthState | undefined, formData: For
   if (!pin) return { error: 'PIN is required.' };
 
   try {
-    const user = await prisma.user.findFirst({ where: { role: UserRole.STAFF, pin } });
+    const user = await withDbRetry(() => prisma.user.findFirst({ where: { role: UserRole.STAFF, pin } }));
     if (!user) return { error: 'Invalid PIN. Please try again.' };
 
     const sessionData: UserSession = {
@@ -107,7 +126,7 @@ export async function kitchenLogin(prevState: AuthState | undefined, formData: F
   if (!password) return { error: 'Password is required.' };
 
   try {
-    const user = await (prisma as any).user.findFirst({ where: { role: UserRole.KITCHEN, password } });
+    const user = await withDbRetry(() => prisma.user.findFirst({ where: { role: UserRole.KITCHEN, password } }));
     if (!user) return { error: 'Incorrect password for Kitchen Display.' };
 
     const sessionData: UserSession = {
@@ -136,19 +155,19 @@ export async function registerAdmin(prevState: AuthState | undefined, formData: 
   }
 
   try {
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await withDbRetry(() => prisma.user.findUnique({ where: { email } }));
     if (existing) {
       return { error: 'An account with this email already exists.' };
     }
 
-    const user = await prisma.user.create({
+    const user = await withDbRetry(() => prisma.user.create({
       data: {
         email,
         name,
         password,
         role: UserRole.ADMIN,
       },
-    });
+    }));
 
     const sessionData: UserSession = {
       isLoggedIn: true,

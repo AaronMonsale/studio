@@ -31,45 +31,62 @@ function formatMonthLabel(idx: number) {
 }
 
 export async function getDashboardStats() {
-  const [txCount, txAgg] = await Promise.all([
-    prisma.transaction.count({ where: { status: PaymentStatus.SUCCESS } }),
-    prisma.transaction.aggregate({
-      where: { status: PaymentStatus.SUCCESS },
-      _sum: { amount: true },
-    }),
-  ]);
+  try {
+    const [txCount, txAgg] = await Promise.all([
+      prisma.transaction.count({ where: { status: PaymentStatus.SUCCESS } }),
+      prisma.transaction.aggregate({
+        where: { status: PaymentStatus.SUCCESS },
+        _sum: { amount: true },
+      }),
+    ]);
 
-  const totalRevenue = Number(txAgg._sum.amount || 0);
-  const totalTransactions = txCount;
-  const avgTransactionValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+    const totalRevenue = Number(txAgg._sum.amount || 0);
+    const totalTransactions = txCount;
+    const avgTransactionValue = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
 
-  return { totalRevenue, totalTransactions, avgTransactionValue };
+    return { totalRevenue, totalTransactions, avgTransactionValue };
+  } catch {
+    return { totalRevenue: 0, totalTransactions: 0, avgTransactionValue: 0 };
+  }
 }
 
 export async function getOrdersToday(): Promise<number> {
   const today = startOfDay(new Date());
   const tomorrow = addDays(today, 1);
-  const count = await prisma.order.count({ where: { createdAt: { gte: today, lt: tomorrow } } });
-  return count;
+  try {
+    const count = await prisma.order.count({ where: { createdAt: { gte: today, lt: tomorrow } } });
+    return count;
+  } catch {
+    return 0;
+  }
 }
 
 export async function getTableOccupancy(): Promise<{ available: number; occupied: number; reserved: number }> {
-  const [available, occupied, reserved] = await Promise.all([
-    prisma.table.count({ where: { status: "AVAILABLE" } as any }),
-    prisma.table.count({ where: { status: "OCCUPIED" } as any }),
-    prisma.table.count({ where: { status: "RESERVED" } as any }),
-  ]);
-  return { available, occupied, reserved };
+  try {
+    const [available, occupied, reserved] = await Promise.all([
+      prisma.table.count({ where: { status: "AVAILABLE" } as any }),
+      prisma.table.count({ where: { status: "OCCUPIED" } as any }),
+      prisma.table.count({ where: { status: "RESERVED" } as any }),
+    ]);
+    return { available, occupied, reserved };
+  } catch {
+    return { available: 0, occupied: 0, reserved: 0 };
+  }
 }
 
 export async function getDailyRevenue(): Promise<RevenuePoint[]> {
   // Last 24 hours buckets by hour
   const now = new Date();
   const start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  const tx = await prisma.transaction.findMany({
-    where: { status: PaymentStatus.SUCCESS, createdAt: { gte: start } },
-    select: { amount: true, createdAt: true },
-  });
+  let tx: { amount: any; createdAt: Date }[] = [];
+  try {
+    tx = await prisma.transaction.findMany({
+      where: { status: PaymentStatus.SUCCESS, createdAt: { gte: start } },
+      select: { amount: true, createdAt: true },
+    });
+  } catch {
+    tx = [];
+  }
   const buckets: Record<string, number> = {};
   for (let i = 0; i < 24; i++) {
     const h = new Date(start.getTime() + i * 60 * 60 * 1000);
@@ -91,10 +108,15 @@ export async function getWeeklyRevenue(): Promise<RevenuePoint[]> {
   // Last 7 days
   const today = startOfDay(new Date());
   const start = addDays(today, -6);
-  const tx = await prisma.transaction.findMany({
-    where: { status: PaymentStatus.SUCCESS, createdAt: { gte: start } },
-    select: { amount: true, createdAt: true },
-  });
+  let tx: { amount: any; createdAt: Date }[] = [];
+  try {
+    tx = await prisma.transaction.findMany({
+      where: { status: PaymentStatus.SUCCESS, createdAt: { gte: start } },
+      select: { amount: true, createdAt: true },
+    });
+  } catch {
+    tx = [];
+  }
   const buckets: Record<string, number> = {};
   for (let i = 0; i < 7; i++) {
     const d = addDays(start, i);
@@ -117,10 +139,15 @@ export async function getMonthlyRevenue(): Promise<RevenuePoint[]> {
   // Last 30 days
   const today = startOfDay(new Date());
   const start = addDays(today, -29);
-  const tx = await prisma.transaction.findMany({
-    where: { status: PaymentStatus.SUCCESS, createdAt: { gte: start } },
-    select: { amount: true, createdAt: true },
-  });
+  let tx: { amount: any; createdAt: Date }[] = [];
+  try {
+    tx = await prisma.transaction.findMany({
+      where: { status: PaymentStatus.SUCCESS, createdAt: { gte: start } },
+      select: { amount: true, createdAt: true },
+    });
+  } catch {
+    tx = [];
+  }
   const buckets: Record<string, number> = {};
   for (let i = 0; i < 30; i++) {
     const d = addDays(start, i);
@@ -144,10 +171,15 @@ export async function getAnnualRevenue(): Promise<RevenuePoint[]> {
   const now = new Date();
   const yearStart = new Date(now.getFullYear(), 0, 1);
   const nextYear = new Date(now.getFullYear() + 1, 0, 1);
-  const tx = await prisma.transaction.findMany({
-    where: { status: PaymentStatus.SUCCESS, createdAt: { gte: yearStart, lt: nextYear } },
-    select: { amount: true, createdAt: true },
-  });
+  let tx: { amount: any; createdAt: Date }[] = [];
+  try {
+    tx = await prisma.transaction.findMany({
+      where: { status: PaymentStatus.SUCCESS, createdAt: { gte: yearStart, lt: nextYear } },
+      select: { amount: true, createdAt: true },
+    });
+  } catch {
+    tx = [];
+  }
   const buckets: number[] = Array.from({ length: 12 }, () => 0);
   tx.forEach((t) => {
     const m = t.createdAt.getMonth();
@@ -161,10 +193,15 @@ export async function getSalesData(): Promise<SalesPoint[]> {
   // Use orders (paid) as sales counts, grouped last 7 days
   const today = startOfDay(new Date());
   const start = addDays(today, -6);
-  const orders = await prisma.order.findMany({
-    where: { createdAt: { gte: start } },
-    select: { createdAt: true },
-  });
+  let orders: { createdAt: Date }[] = [];
+  try {
+    orders = await prisma.order.findMany({
+      where: { createdAt: { gte: start } },
+      select: { createdAt: true },
+    });
+  } catch {
+    orders = [];
+  }
   const buckets: Record<string, number> = {};
   for (let i = 0; i < 7; i++) {
     const d = addDays(start, i);

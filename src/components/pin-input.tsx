@@ -10,6 +10,8 @@ export function PinInput() {
   const [pin, setPin] = useState('');
   const { pending } = useFormStatus();
   const formRef = useRef<HTMLDivElement>(null);
+  const submittedRef = useRef(false);
+  const submitBtnRef = useRef<HTMLButtonElement>(null);
 
   const handleNumberClick = (num: string) => {
     if (pin.length < 4) {
@@ -26,18 +28,28 @@ export function PinInput() {
   };
   
   useEffect(() => {
+    if (pin.length < 4) {
+      submittedRef.current = false;
+    }
     if (pin.length === 4) {
       // Automatically submit the form
       const container = formRef.current;
-      if (container) {
+      if (container && !pending && !submittedRef.current) {
         const parentForm = container.closest('form') as HTMLFormElement | null;
         if (parentForm) {
-          // Use the standards-compliant way to submit forms programmatically
-          parentForm.requestSubmit();
+          // Use the standards-compliant way to submit forms programmatically with a submit button
+          submittedRef.current = true;
+          // Wait for React state to commit DOM value (two rAFs for safety)
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const btn = submitBtnRef.current ?? undefined;
+              parentForm.requestSubmit(btn);
+            });
+          });
         }
       }
     }
-  }, [pin]);
+  }, [pin, pending]);
 
   const buttons = [
     '1', '2', '3',
@@ -53,6 +65,8 @@ export function PinInput() {
         name="pin"
         value={pin}
       />
+      {/* Hidden submit button to act as the submitter for requestSubmit */}
+      <button type="submit" ref={submitBtnRef} style={{ display: 'none' }} aria-hidden="true" />
       <div className="flex space-x-2 mb-4">
         {Array.from({ length: 4 }).map((_, index) => (
           <div

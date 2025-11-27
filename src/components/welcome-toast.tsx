@@ -8,7 +8,7 @@ export function WelcomeToast({ name }: { name: string }) {
 
   useEffect(() => {
     if (name) {
-      toast({ title: `welcome ${name}` });
+      toast({ title: `Welcome ${name}` });
     }
   }, [name, toast]);
 

@@ -16,7 +16,7 @@ type Category = {
   items: Item[];
 };
 
-export function MenuTiles({ categories }: { categories: Category[] }) {
+export function MenuTiles({ categories, onItemClick }: { categories: Category[]; onItemClick?: (item: Item) => void }) {
   const [activeId, setActiveId] = React.useState<string | null>(categories[0]?.id ?? null);
   const active = categories.find((c) => c.id === activeId) ?? null;
 
@@ -44,6 +44,7 @@ export function MenuTiles({ categories }: { categories: Category[] }) {
                 key={item.id}
                 type="button"
                 className="border rounded-md p-3 flex flex-col items-start gap-2 text-left hover:bg-accent transition-colors"
+                onClick={() => onItemClick?.(item)}
               >
                 <div className="font-medium">{item.name}</div>
                 {item.description ? (

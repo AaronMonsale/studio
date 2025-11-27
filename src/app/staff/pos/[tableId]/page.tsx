@@ -7,7 +7,9 @@ import { Ban, CircleDollarSign, Hand } from "lucide-react";
 import { listMenu } from "@/lib/admin-actions";
 import prisma from "@/lib/db";
 import { redirect } from "next/navigation";
-import { MenuTiles } from "@/components/pos/menu-tiles";
+import { MenuTilesController } from "@/components/pos/menu-tiles-controller";
+import { addItemToOrder, markTableOccupied, reserveTable, cancelReservation } from "@/lib/pos-actions";
+import { PosActions } from "@/components/pos/pos-actions";
 
 export default async function PosPage({ params }: { params: Promise<{ tableId: string }> }) {
     const { tableId } = await params;
@@ -15,6 +17,7 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
     // Fetch table info (graceful if not found)
     let tableName = `Table ${tableId}`;
     let tableStatus: 'available' | 'occupied' | 'reserved' = 'available';
+    let reservationName: string | null = null;
     try {
         const table = await prisma.table.findUnique({ where: { id: tableId } });
         if (!table) {
@@ -22,6 +25,7 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
         }
         tableName = table!.label;
         tableStatus = (table!.status as any)?.toString().toLowerCase() as any;
+        reservationName = (table as any).reservationName ?? null;
     } catch {
         // If DB is unavailable, still render with fallback name
     }
@@ -43,6 +47,12 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
     return (
         <div className="grid md:grid-cols-3 gap-6 h-full">
             <div className="md:col-span-2 space-y-6">
+                {/* Hidden form to add items to order via server action */}
+                <form id="add-item-form" action={addItemToOrder} className="hidden">
+                    <input type="hidden" name="tableId" defaultValue={tableId} />
+                    <input type="hidden" name="menuItemId" />
+                    <input type="hidden" name="discountName" />
+                </form>
                 {categories.length === 0 ? (
                     <Card>
                         <CardHeader>
@@ -53,7 +63,7 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
                         </CardContent>
                     </Card>
                 ) : (
-                    <MenuTiles categories={serializableCategories as any} />
+                    <MenuTilesController categories={serializableCategories as any} tableId={tableId} />
                 )}
             </div>
             <div>
@@ -70,16 +80,29 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
                     </CardHeader>
                     <CardContent>
                         <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg min-h-[200px]">
-                            <p className="text-center text-muted-foreground">Current order will be displayed here.</p>
+                            {tableStatus === 'reserved' && reservationName ? (
+                                <p className="text-center text-muted-foreground">Reserved to {reservationName}</p>
+                            ) : (
+                                <p className="text-center text-muted-foreground">Current order will be displayed here.</p>
+                            )}
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-2">
                         <Button className="w-full" size="lg"><CircleDollarSign className="mr-2"/>Pay</Button>
-                        <div className="grid grid-cols-2 gap-2 w-full">
-                            <Button variant="outline"><Hand className="mr-2"/>Occupied</Button>
-                            <Button variant="outline">Reserved</Button>
-                        </div>
-                        <Button variant="destructive" className="w-full"><Ban className="mr-2"/>Cancel</Button>
+                        {/* Hidden forms bound to server actions */}
+                        <form id="mark-occupied-form" action={markTableOccupied} className="hidden">
+                            <input type="hidden" name="tableId" value={tableId} />
+                        </form>
+                        <form id="reserve-table-form" action={reserveTable} className="hidden">
+                            <input type="hidden" name="tableId" value={tableId} />
+                            <input type="hidden" name="name" />
+                        </form>
+                        {/* Client control renders the two buttons and submits these forms */}
+                        <PosActions tableId={tableId} />
+                        <form action={cancelReservation} className="w-full">
+                            <input type="hidden" name="tableId" value={tableId} />
+                            <Button variant="destructive" className="w-full"><Ban className="mr-2"/>Cancel</Button>
+                        </form>
                     </CardFooter>
                 </Card>
             </div>

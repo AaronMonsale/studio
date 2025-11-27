@@ -60,6 +60,7 @@ model Table {
   label    String
   capacity Int         @default(1)
   status   TableStatus @default(AVAILABLE)
+  reservationName String?
   orders   Order[]
 }
 

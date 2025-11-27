@@ -28,6 +28,17 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
 
     // Fetch menu categories and items created by admin
     const categories = await listMenu();
+    // Convert Prisma Decimal to plain number so it can be sent to a Client Component
+    const serializableCategories = categories.map((cat: any) => ({
+        id: cat.id,
+        name: cat.name,
+        items: (cat.items || []).map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            description: item.description ?? null,
+            price: Number(item.price),
+        })),
+    }));
 
     return (
         <div className="grid md:grid-cols-3 gap-6 h-full">
@@ -42,7 +53,7 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
                         </CardContent>
                     </Card>
                 ) : (
-                    <MenuTiles categories={categories as any} />
+                    <MenuTiles categories={serializableCategories as any} />
                 )}
             </div>
             <div>

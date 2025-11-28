@@ -4,11 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Ban, CircleDollarSign, Hand, ArrowLeft } from "lucide-react";
-import { listMenu } from "@/lib/admin-actions";
+import { listMenu, listDiscounts } from "@/lib/admin-actions";
 import prisma from "@/lib/db";
 import { redirect } from "next/navigation";
 import { MenuTilesController } from "@/components/pos/menu-tiles-controller";
-import { addItemToOrder, markTableOccupied, reserveTable, cancelReservation } from "@/lib/pos-actions";
+import { addItemToOrder, markTableOccupied, reserveTable, cancelReservation, completeOrder } from "@/lib/pos-actions";
 import { PosActions } from "@/components/pos/pos-actions";
 import Link from "next/link";
 
@@ -33,6 +33,23 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
 
     // Fetch menu categories and items created by admin
     const categories = await listMenu();
+
+    // Fetch discounts configured on the admin side so staff can apply them in POS
+    const rawDiscounts = await listDiscounts();
+    const now = new Date();
+    const activeDiscounts = (rawDiscounts as any[]).filter((d) => {
+        if (!d.active) return false;
+        if (d.startsAt && new Date(d.startsAt) > now) return false;
+        if (d.endsAt && new Date(d.endsAt) < now) return false;
+        return true;
+    });
+    const serializableDiscounts = activeDiscounts.map((d) => ({
+        id: d.id,
+        name: d.name as string,
+        label: d.type === 'PERCENT'
+            ? `${d.name} – ${Number(d.value)}%`
+            : `${d.name} – $${Number(d.value).toFixed(2)}`,
+    }));
     // Convert Prisma Decimal to plain number so it can be sent to a Client Component
     const serializableCategories = categories.map((cat: any) => ({
         id: cat.id,
@@ -64,7 +81,11 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
                         </CardContent>
                     </Card>
                 ) : (
-                    <MenuTilesController categories={serializableCategories as any} tableId={tableId} />
+                    <MenuTilesController
+                        categories={serializableCategories as any}
+                        tableId={tableId}
+                        discounts={serializableDiscounts as any}
+                    />
                 )}
             </div>
             <div>
@@ -97,7 +118,13 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-2">
-                        <Button className="w-full" size="lg"><CircleDollarSign className="mr-2"/>Pay</Button>
+                        <form action={completeOrder} className="w-full">
+                            <input type="hidden" name="tableId" value={tableId} />
+                            <Button className="w-full" size="lg">
+                                <CircleDollarSign className="mr-2"/>
+                                Pay
+                            </Button>
+                        </form>
                         {/* Hidden forms bound to server actions */}
                         <form id="mark-occupied-form" action={markTableOccupied} className="hidden">
                             <input type="hidden" name="tableId" value={tableId} />

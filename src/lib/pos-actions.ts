@@ -1,7 +1,8 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { DiscountType, OrderStatus, TableStatus } from '@prisma/client';
+import { DiscountType, OrderStatus, PaymentMethod, PaymentStatus, TableStatus } from '@prisma/client';
+import { getSession } from '@/lib/actions';
 
 function isDiscountActive(d: { startsAt: Date | null; endsAt: Date | null; active: boolean }) {
   const now = new Date();
@@ -24,7 +25,21 @@ export async function addItemToOrder(formData: FormData) {
   // Find or create open order for this table
   let order = await prisma.order.findFirst({ where: { tableId, status: OrderStatus.OPEN } });
   if (!order) {
-    order = await prisma.order.create({ data: { tableId, status: OrderStatus.OPEN, total: 0 } });
+    // Attach current staff user if available
+    let staffId: string | null = null;
+    try {
+      const session = await getSession();
+      if (session?.userType === 'staff' && session.id) staffId = session.id;
+    } catch {}
+
+    order = await prisma.order.create({
+      data: {
+        tableId,
+        status: OrderStatus.OPEN,
+        total: 0,
+        staffId: staffId || undefined,
+      },
+    });
   }
 
   const item = await prisma.menuItem.findUnique({ where: { id: menuItemId } });
@@ -32,6 +47,7 @@ export async function addItemToOrder(formData: FormData) {
 
   // Find optional discount
   let appliedUnit = item.price as any;
+  let appliedDiscountName: string | null = null;
   if (discountNameRaw) {
     const discount = await prisma.discount.findFirst({ where: { name: discountNameRaw } });
     if (discount && isDiscountActive({ startsAt: discount.startsAt, endsAt: discount.endsAt, active: discount.active })) {
@@ -42,6 +58,7 @@ export async function addItemToOrder(formData: FormData) {
         // FIXED
         appliedUnit = Math.max(0, Number(item.price) - Number(discount.value));
       }
+      appliedDiscountName = discount.name;
     }
   } else {
     // If no discount name provided, try to find an applicable discount by item or category
@@ -57,14 +74,19 @@ export async function addItemToOrder(formData: FormData) {
     });
     // pick the best (max savings)
     let bestPrice = Number(item.price);
+    let bestDiscountName: string | null = null;
     for (const d of discounts) {
       if (!isDiscountActive({ startsAt: d.startsAt, endsAt: d.endsAt, active: d.active })) continue;
       let price = Number(item.price);
       if (d.type === DiscountType.PERCENT) price = price * (1 - Number(d.value) / 100);
       else price = Math.max(0, price - Number(d.value));
-      if (price < bestPrice) bestPrice = price;
+      if (price < bestPrice) {
+        bestPrice = price;
+        bestDiscountName = d.name;
+      }
     }
     appliedUnit = bestPrice;
+    appliedDiscountName = bestDiscountName;
   }
 
   // Create order item
@@ -74,6 +96,7 @@ export async function addItemToOrder(formData: FormData) {
       menuItemId,
       quantity: 1,
       unitPrice: Number(appliedUnit),
+      appliedDiscountName: appliedDiscountName || undefined,
     },
   });
 
@@ -103,4 +126,44 @@ export async function cancelReservation(formData: FormData) {
   const tableId = (formData.get('tableId') as string | null) || '';
   if (!tableId) return;
   await prisma.table.update({ where: { id: tableId }, data: ({ status: TableStatus.AVAILABLE, reservationName: null } as any) });
+}
+
+export async function completeOrder(formData: FormData) {
+  const tableId = (formData.get('tableId') as string | null) || '';
+  if (!tableId) return;
+
+  // Find open order for this table
+  const order = await prisma.order.findFirst({
+    where: { tableId, status: OrderStatus.OPEN },
+    include: { items: true },
+  });
+  if (!order) return;
+
+  // Ensure staff association if available
+  try {
+    const session = await getSession();
+    if (session?.userType === 'staff' && session.id && order.staffId == null) {
+      await prisma.order.update({ where: { id: order.id }, data: { staffId: session.id } });
+    }
+  } catch {}
+
+  // Use the current order total as transaction amount
+  const amount = Number(order.total);
+
+  // Create transaction record
+  await prisma.transaction.create({
+    data: {
+      orderId: order.id,
+      amount,
+      method: PaymentMethod.CASH,
+      status: PaymentStatus.SUCCESS,
+    },
+  });
+
+  // Mark order as paid and free the table
+  await prisma.order.update({ where: { id: order.id }, data: { status: OrderStatus.PAID } });
+  await prisma.table.update({
+    where: { id: tableId },
+    data: ({ status: TableStatus.AVAILABLE, reservationName: null } as any),
+  });
 }

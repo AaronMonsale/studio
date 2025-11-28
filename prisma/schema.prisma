@@ -87,6 +87,7 @@ model OrderItem {
   menuItemId String
   quantity   Int      @default(1)
   unitPrice  Decimal  @db.Decimal(10, 2)
+  appliedDiscountName String?
   menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
   order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 

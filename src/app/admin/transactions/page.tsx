@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listTransactions } from "@/lib/admin-actions";
 import { PaymentStatus } from "@prisma/client";
+import Link from "next/link";
 
 function statusBadgeVariant(status: PaymentStatus) {
   switch (status) {
@@ -45,12 +46,14 @@ export default async function TransactionsPage() {
             </TableHeader>
             <TableBody>
               {transactions.map((t) => (
-                <TableRow key={t.id}>
+                <TableRow key={t.id} className="cursor-pointer hover:bg-muted/60">
                   <TableCell>
-                    <div className="font-medium">Invoice #{t.orderId}</div>
-                    <div className="hidden text-sm text-muted-foreground md:inline">
-                      Tx #{t.id}
-                    </div>
+                    <Link href={`/admin/transactions/${t.id}`} className="block">
+                      <div className="font-medium">Invoice #{t.orderId}</div>
+                      <div className="hidden text-sm text-muted-foreground md:inline">
+                        Tx #{t.id}
+                      </div>
+                    </Link>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">{t.order?.staff?.name || '—'}</TableCell>
                   <TableCell className="hidden sm:table-cell">

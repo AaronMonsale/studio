@@ -236,6 +236,24 @@ export async function listTransactions() {
   });
 }
 
+export async function getTransactionDetails(id: string) {
+  if (!id) throw new Error('Transaction ID is required');
+  return prisma.transaction.findUnique({
+    where: { id },
+    include: {
+      order: {
+        include: {
+          staff: true,
+          table: true,
+          items: {
+            include: { menuItem: true },
+          },
+        },
+      },
+    },
+  });
+}
+
 // Discounts
 export async function listDiscounts() {
   return (prisma as any).discount.findMany({

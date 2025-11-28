@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,6 +26,7 @@ export function EditDiscountButton({ discount, categories }: { discount: Discoun
   const [startsAt, setStartsAt] = useState(discount.startsAt ? new Date(discount.startsAt).toISOString().slice(0,16) : '');
   const [endsAt, setEndsAt] = useState(discount.endsAt ? new Date(discount.endsAt).toISOString().slice(0,16) : '');
   const [active, setActive] = useState(Boolean(discount.active));
+  const router = useRouter();
 
   return (
     <div className="inline-flex items-center gap-2">
@@ -36,6 +38,7 @@ export function EditDiscountButton({ discount, categories }: { discount: Discoun
             const { updateDiscount } = await import('@/lib/admin-actions');
             await updateDiscount(formData);
             setOpen(false);
+            router.refresh();
           }}
           className="grid gap-2 p-2 border rounded-md"
         >

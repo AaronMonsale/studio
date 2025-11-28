@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label';
 export function EditCategoryButton({ categoryId, name }: { categoryId: string; name: string }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(name);
+  const router = useRouter();
 
   return (
     <div className="inline-flex items-center gap-2">
@@ -19,6 +21,7 @@ export function EditCategoryButton({ categoryId, name }: { categoryId: string; n
             const { updateCategory } = await import('@/lib/admin-actions');
             await updateCategory(formData);
             setOpen(false);
+            router.refresh();
           }}
           className="flex items-center gap-2"
         >

@@ -1,13 +1,16 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 export function DeleteDiscountButton({ id }: { id: string }) {
+  const router = useRouter();
   return (
     <form
       action={async (formData) => {
         const { deleteDiscount } = await import('@/lib/admin-actions');
         await deleteDiscount(formData);
+        router.refresh();
       }}
       className="inline"
     >

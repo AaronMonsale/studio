@@ -1,14 +1,17 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 export function DeleteCategoryButton({ categoryId }: { categoryId: string }) {
+  const router = useRouter();
   return (
     <form
       action={async (formData) => {
         const { deleteCategory } = await import('@/lib/admin-actions');
         await deleteCategory(formData);
+        router.refresh();
       }}
       className="inline"
     >

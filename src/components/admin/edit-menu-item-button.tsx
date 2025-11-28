@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,7 @@ export function EditMenuItemButton({ item }: { item: { id: string; name: string;
   const [name, setName] = useState(item.name);
   const [price, setPrice] = useState(String(item.price));
   const [description, setDescription] = useState(item.description ?? '');
+  const router = useRouter();
 
   return (
     <div className="inline-flex items-center gap-2">
@@ -22,6 +24,7 @@ export function EditMenuItemButton({ item }: { item: { id: string; name: string;
             const { updateMenuItem } = await import('@/lib/admin-actions');
             await updateMenuItem(formData);
             setOpen(false);
+            router.refresh();
           }}
           className="flex items-center gap-2"
         >

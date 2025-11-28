@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label';
 export function EditTableButton({ table }: { table: { id: string; label: string; capacity: number; status: 'AVAILABLE' | 'OCCUPIED' | 'RESERVED' } }) {
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState(table.label);
+  const router = useRouter();
   
 
   return (
@@ -20,6 +22,7 @@ export function EditTableButton({ table }: { table: { id: string; label: string;
             const { updateTable } = await import('@/lib/admin-actions');
             await updateTable(formData);
             setOpen(false);
+            router.refresh();
           }}
           className="flex flex-col gap-2 p-2 border rounded-md w-full"
         >

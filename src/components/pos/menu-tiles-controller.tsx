@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { MenuTiles } from "@/components/pos/menu-tiles";
 
 type Item = { id: string; name: string; description?: string | null; price: number };
@@ -26,6 +27,7 @@ export function MenuTilesController({
   tableId: string;
   discounts: DiscountOption[];
 }) {
+  const router = useRouter();
   const [selectedDiscount, setSelectedDiscount] = React.useState<string>("");
 
   return (
@@ -60,6 +62,12 @@ export function MenuTilesController({
           if (menuInput) menuInput.value = item.id;
           if (discountInput) discountInput.value = selectedDiscount;
           form.requestSubmit();
+          // After submitting the server action, refresh the route so the
+          // current order panel (server-rendered) reflects the new item.
+          // Use a short delay so the mutation has completed.
+          setTimeout(() => {
+            router.refresh();
+          }, 50);
         }}
       />
     </div>

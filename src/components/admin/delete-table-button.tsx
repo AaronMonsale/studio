@@ -1,13 +1,16 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 export function DeleteTableButton({ id }: { id: string }) {
+  const router = useRouter();
   return (
     <form
       action={async (formData) => {
         const { deleteTable } = await import('@/lib/admin-actions');
         await deleteTable(formData);
+        router.refresh();
       }}
       className="inline"
     >

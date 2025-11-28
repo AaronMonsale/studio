@@ -3,6 +3,7 @@
 import prisma from '@/lib/db';
 import { DiscountType, OrderStatus, PaymentMethod, PaymentStatus, TableStatus } from '@prisma/client';
 import { getSession } from '@/lib/actions';
+import { redirect } from 'next/navigation';
 
 function isDiscountActive(d: { startsAt: Date | null; endsAt: Date | null; active: boolean }) {
   const now = new Date();
@@ -126,6 +127,7 @@ export async function cancelReservation(formData: FormData) {
   const tableId = (formData.get('tableId') as string | null) || '';
   if (!tableId) return;
   await prisma.table.update({ where: { id: tableId }, data: ({ status: TableStatus.AVAILABLE, reservationName: null } as any) });
+  redirect(`/staff/pos/${tableId}`);
 }
 
 export async function completeOrder(formData: FormData) {
@@ -166,4 +168,45 @@ export async function completeOrder(formData: FormData) {
     where: { id: tableId },
     data: ({ status: TableStatus.AVAILABLE, reservationName: null } as any),
   });
+}
+
+export async function removeItemFromOrder(formData: FormData) {
+  const tableId = (formData.get('tableId') as string | null) || '';
+  const menuItemId = (formData.get('menuItemId') as string | null) || '';
+  if (!tableId || !menuItemId) return;
+
+  const order = await prisma.order.findFirst({ where: { tableId, status: OrderStatus.OPEN } });
+  if (!order) return;
+
+  const item = await prisma.orderItem.findFirst({
+    where: { orderId: order.id, menuItemId },
+  });
+  if (!item) return;
+
+  await prisma.orderItem.delete({ where: { id: item.id } });
+
+  const remaining = await prisma.orderItem.findMany({
+    where: { orderId: order.id },
+    select: { unitPrice: true, quantity: true },
+  });
+  const total = remaining.reduce((sum, it) => sum + Number(it.unitPrice) * it.quantity, 0);
+  await prisma.order.update({ where: { id: order.id }, data: { total } });
+  redirect(`/staff/pos/${tableId}`);
+}
+
+export async function cancelOrder(formData: FormData) {
+  const tableId = (formData.get('tableId') as string | null) || '';
+  if (!tableId) return;
+
+  const order = await prisma.order.findFirst({ where: { tableId, status: OrderStatus.OPEN } });
+  if (!order) return;
+
+  await prisma.orderItem.deleteMany({ where: { orderId: order.id } });
+  await prisma.order.delete({ where: { id: order.id } });
+
+  await prisma.table.update({
+    where: { id: tableId },
+    data: ({ status: TableStatus.AVAILABLE, reservationName: null } as any),
+  });
+  redirect(`/staff/pos/${tableId}`);
 }

@@ -4,13 +4,16 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Ban, CircleDollarSign, Hand } from "lucide-react";
 
-export function PosActions({ tableId }: { tableId: string }) {
+export function PosActions({ tableId, hasOpenOrder }: { tableId: string; hasOpenOrder: boolean }) {
   return (
     <div className="grid grid-cols-2 gap-2 w-full">
       {/* Occupied */}
       <Button
         variant="outline"
+        disabled={!hasOpenOrder}
+        aria-disabled={!hasOpenOrder}
         onClick={() => {
+          if (!hasOpenOrder) return;
           const form = document.getElementById("mark-occupied-form") as HTMLFormElement | null;
           if (!form) return;
           const tableInput = form.querySelector('input[name="tableId"]') as HTMLInputElement | null;

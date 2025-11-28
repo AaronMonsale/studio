@@ -200,7 +200,7 @@ export default async function PosPage({ params }: { params: Promise<{ tableId: s
                             <input type="hidden" name="name" />
                         </form>
                         {/* Client control renders the two buttons and submits these forms */}
-                        <PosActions tableId={tableId} />
+                        <PosActions tableId={tableId} hasOpenOrder={Boolean(openOrder && openOrder.items.length > 0)} />
                         {tableStatus === 'reserved' && reservationName && (
                             <form action={cancelReservation} className="w-full">
                                 <input type="hidden" name="tableId" value={tableId} />
